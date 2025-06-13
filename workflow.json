@@ -1,0 +1,16 @@
+{
+    "workflow_id": "wf1",
+    "tasks": [
+        {
+            "id": 1,
+            "name": "collect data",
+            "command": "python collect.py"
+        },
+        {
+            "id": 2,
+            "name": "process data",
+            "command": "python process.py",
+            "depends_on": [1]
+        }
+    ]
+}
