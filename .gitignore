@@ -1,3 +1,3 @@
 .venv
-pycache__pycache__/
+__pycache__/
 *.py[cod]
