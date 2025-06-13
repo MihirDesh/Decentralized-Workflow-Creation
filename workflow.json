@@ -3,13 +3,13 @@
     "tasks": [
         {
             "id": 1,
-            "name": "collect data",
-            "command": "python collect.py"
+            "name": "collect_data",
+            "command": "python scripts/collect.py"
         },
         {
             "id": 2,
-            "name": "process data",
-            "command": "python process.py",
+            "name": "process_data",
+            "command": "python scripts/process.py",
             "depends_on": [1]
         }
     ]

@@ -1,0 +1,7 @@
+{
+  "task_id": 2,
+  "name": "process_data",
+  "status": "completed",
+  "output": "Task Completed\n",
+  "result_path": "results/processed.txt"
+}
