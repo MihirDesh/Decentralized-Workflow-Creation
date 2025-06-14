@@ -7,6 +7,7 @@ from typing import Optional
 import pika
 import threading
 import logging
+import ipfshttpclient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +23,8 @@ class Task(BaseModel):
 class TaskResult(BaseModel):
     task_id: int
     status: str
-    result_path: Optional[str] = None
+    result_cid: Optional[str] = None
+    metadata_cid: Optional[str] = None
     error: Optional[str] = None
 
 def execute_task_internal(task: Task) -> TaskResult:
@@ -42,25 +44,31 @@ def execute_task_internal(task: Task) -> TaskResult:
 
         status = "completed" if result.returncode == 0 else "failed"
         error = result.stderr if result.returncode != 0 else None
-        result_path = None
+        result_cid = None
+        metadata_cid = None
 
         if status == "completed":
             result_file = result_dir / f"task_{task.id}.json"
+            output_file = result_dir / f"output.txt" if task.id == 1 else result_dir / f"processed.txt"
             result_data = {
                 "task_id": task.id,
                 "name": task.name,
                 "status": status,
                 "output": result.stdout,
-                "result_path": str(result_dir / f"output.txt") if task.id == 1 else str(result_dir / f"processed.txt")
+                "result_path": str(output_file)
             }
             with result_file.open("w") as f:
                 json.dump(result_data, f, indent=2)
-            result_path = str(result_file)
+            
+            with ipfshttpclient.connect() as client:
+                result_cid = client.add(str(output_file))["Hash"]
+                metadata_cid = client.add(str(result_file))["Hash"]
 
         return TaskResult(
             task_id=task.id,
             status=status,
-            result_path=result_path,
+            result_cid = result_cid,
+            metadata_cid = metadata_cid,
             error=error
         )
 

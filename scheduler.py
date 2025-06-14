@@ -4,6 +4,7 @@ import pika
 import logging
 from workflow_parser import parse_workflow, Workflow, Task
 from typing import Dict, Set
+import ipfshttpclient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ class Scheduler:
         self.completed_tasks: set[int] = set()
         self.connection = None
         self.channel = None
+        self.results: Dict[int, dict] = {}
 
     def load_workflow(self, workflow_file: str):
         try:
@@ -67,6 +69,16 @@ class Scheduler:
             logger.info(f"Task {task_id} completed with status: {status}")
 
             if status == "completed":
+                self.results[task_id] = {
+                    "result_cid": result["result_cid"],
+                    "metadata_cid": result["metadata_cid"]
+                }
+                with ipfshttpclient.connect() as client:
+                    result_content = client.cat(result["result_cid"]).decode("utf-8")
+                    metadata_content = json.loads(client.cat(result["metadata_cid"]).decode("utf-8"))
+                    logger.info(f"Task {task_id} result content: {result_content}")
+                    logger.info(f"Task {task_id} metadata: {metadata_content}")
+
                 self.completed_tasks.add(task_id)
                 self.queue_ready_tasks()
             else:

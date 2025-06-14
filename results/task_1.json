@@ -1,7 +1,0 @@
-{
-  "task_id": 1,
-  "name": "collect_data",
-  "status": "completed",
-  "output": "Task Completed\n",
-  "result_path": "results/output.txt"
-}
